@@ -43,8 +43,24 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-  const person = request.body
-  person.id = parseInt(Math.random() * Number.MAX_SAFE_INTEGER)
+  const body = request.body
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: 'name or number must not be empty'
+    })
+  }
+
+  if (persons.find(p => p.name === body.name)) {
+    return response.status(400).json({
+      error: 'name must be unique'
+    })
+  }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+    id: parseInt(Math.random() * Number.MAX_SAFE_INTEGER)
+  }
 
   console.log('person:', person);
   
