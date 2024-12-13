@@ -4,7 +4,20 @@ const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
-app.use(morgan('tiny'))
+// app.use(morgan('tiny'))
+
+// create a morgan token to show the request body
+morgan.token('request-body', function (req, res) {
+  const reqMethod = req.method
+
+  if (reqMethod === 'POST') {
+    const body = req.body
+    return JSON.stringify(body)
+  }
+  return ''
+})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :request-body'))
 
 let persons = [
   { 
@@ -65,7 +78,7 @@ app.post('/api/persons', (request, response) => {
     id: parseInt(Math.random() * Number.MAX_SAFE_INTEGER)
   }
 
-  console.log('person:', person);
+  // console.log('person:', person);
   
   persons = persons.concat(person)
   response.json(person)
