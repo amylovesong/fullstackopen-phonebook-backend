@@ -45,8 +45,33 @@ let persons = [
   }
 ]
 
+const mongoose = require('mongoose')
+require('dotenv').config()
+const url = process.env.MONGODB_URI
+
+mongoose.set('strictQuery', false)
+
+mongoose.connect(url)
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String
+})
+
+personSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
+})
+
+const Person = mongoose.model('Person', personSchema)
+
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -104,7 +129,7 @@ app.get('/info', (request, response) => {
   )
 })
 
-const PORT = process.env.PORT | 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
