@@ -24,45 +24,23 @@ morgan.token('request-body', function (req, res) {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :request-body'))
 
-let persons = [
-  { 
-    "id": "1",
-    "name": "Arto Hellas", 
-    "number": "040-123456"
-  },
-  { 
-    "id": "2",
-    "name": "Ada Lovelace", 
-    "number": "39-44-5323523"
-  },
-  { 
-    "id": "3",
-    "name": "Dan Abramov", 
-    "number": "12-43-234345"
-  },
-  { 
-    "id": "4",
-    "name": "Mary Poppendieck", 
-    "number": "39-23-6423122"
-  }
-]
-
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
-  const person = persons.find(p => p.id === id)
-  console.log('request id:', id, 'find result:', person)
-
-  if (person) {
-    response.json(person)
-  } else {
-    response.status(404).send(`No person found for id: ${id}, please check it`)
-  }
+  Person.findById(id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -114,12 +92,14 @@ app.put('/api/persons/:id', (request, response, next) => {
 })
 
 app.get('/info', (request, response) => {
-  const info = `Phonebook has info for ${persons.length} people`
-  const time = new Date()
-  response.send(`<div>${info}</div>
-    <br/>
-    <span id="time">${time}</span>`
-  )
+  Person.find({}).then(persons => {
+    const info = `Phonebook has info for ${persons.length} people`
+    const time = new Date()
+    response.send(`<div>${info}</div>
+      <br/>
+      <span id="time">${time}</span>`
+    )
+  })
 })
 
 const errorHandler = (error, request, response, next) => {
