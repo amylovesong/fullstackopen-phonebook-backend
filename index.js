@@ -12,7 +12,7 @@ app.use(express.json())
 // app.use(morgan('tiny'))
 
 // create a morgan token to show the request body
-morgan.token('request-body', function (req, res) {
+morgan.token('request-body', function (req) {
   const reqMethod = req.method
 
   if (reqMethod === 'POST') {
@@ -67,7 +67,7 @@ app.post('/api/persons', (request, response, next) => {
 app.delete('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
   Person.findByIdAndDelete(id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -104,11 +104,11 @@ const errorHandler = (error, request, response, next) => {
   console.log('errorHandler:', error.message)
 
   if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id'})
+    return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
-  
+
   next(error)
 }
 
